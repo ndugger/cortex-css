@@ -26,6 +26,11 @@ styleSheet.textContent = createStyleSheet(document.documentElement, css => {
                 opacity: 0.85;
             `)
         })
+        css.selectNot([ css.selectOnlyChild() ], css => {
+            css.write(`
+                border: 1px solid red;
+            `)
+        })
     })
 })
 
