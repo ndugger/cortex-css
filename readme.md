@@ -26,13 +26,41 @@ styleSheet.textContent = createStyleSheet(document.documentElement, css => {
                 opacity: 0.85;
             `)
         })
-        css.selectNot([ css.selectOnlyChild() ], css => {
-            css.write(`
-                border: 1px solid red;
-            `)
-        })
     })
 })
 
 document.head.append(styleSheet)
+```
+
+### Usage With [Cortex](//github.com/ndugger/cortex)
+```typescript
+import { Component, createElement } from 'cortex'
+import { createStyleSheet } from 'glow'
+
+export class Example extends Component {
+
+    protected render() {
+        return [
+            createElement(HTMLButtonElement, { type: 'submit' },
+                createElement(HTMLSlotElement)
+            )
+        ]
+    }
+    
+    protected theme() {
+        return createStyleSheet(this, css => {
+            css.selectClass(HTMLButtonElement, css => {
+                css.write(`
+                    background: blue;
+                    color: white;
+                `)
+                css.selectHover(css => {
+                    css.write(`
+                        opacity: 0.85;
+                    `)
+                })
+            })
+        })
+    }
+}
 ```
