@@ -15,7 +15,7 @@ import { createStyleSheet } from 'glow'
 
 const styleSheet = document.createElement('style')
 
-styleSheet.textContent = createStyleSheet(document.documentElement, css => {
+styleSheet.textContent = createStyleSheet(css => {
     css.select('button', css => {
         css.write(`
             background: blue;
