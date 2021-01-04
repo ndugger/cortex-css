@@ -499,18 +499,35 @@ class StyleSheetFactory {
  * @param host Element which will host the resulting style sheet
  * @param generate Function which exposes the factory DSL
  */
-export function createStyleSheet(host: Element, generate: GenerateRules): string {
+export function createStyleSheet(generate: GenerateRules): string
+export function createStyleSheet(hostOrGenerate: Element | GenerateRules, generate?: GenerateRules): string {
     
     /**
-     * Reset existing style sheet if one already exists
-     * (Happens when existing host updates)
+     * In order to support overloading for generic usages, check type of `hostOrGenerate`
      */
-    if (styleSheets.has(host)) {
+    if (hostOrGenerate instanceof Element) {
+        const host = hostOrGenerate
+
+        /**
+         * Since `generate` has been made optional for overloading, validate its existence
+         */
+        if (!generate) {
+            throw new Error('You must provide a valid CSS generator')
+        }
+
+        /**
+         * Reset existing style sheet if one already exists
+         * (Happens when existing host updates)
+         */
+        if (styleSheets.has(host)) {
+            return styleSheets
+                .get(host)?.reset(generate)?.toString() ?? Combinators.None
+        }
+
         return styleSheets
-            .get(host)?.reset(generate)?.toString() ?? Combinators.None
+            .set(host, new StyleSheetFactory(Combinators.None, generate, host))
+            .get(host)?.toString() ?? Combinators.None
     }
 
-    return styleSheets
-        .set(host, new StyleSheetFactory(Combinators.None, generate, host))
-        .get(host)?.toString() ?? Combinators.None
+    return new StyleSheetFactory(Combinators.None, hostOrGenerate, document.documentElement).toString()
 }
