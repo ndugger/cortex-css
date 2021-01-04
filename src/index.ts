@@ -15,7 +15,7 @@ enum Combinators {
 /**
  * DSL Entry point
  */
-type RuleGenerator = (css: StyleSheetFactory) => void
+type GenerateRules = (css: StyleSheetFactory) => void
 
 /**
  * Represents a CSS string factory
@@ -45,7 +45,7 @@ class StyleSheetFactory {
      * @param generate Function which exposes the factory DSL
      * @param host Element which will host the resulting style sheet
      */
-    public constructor(selector: string, generate: RuleGenerator, host?: Element) {
+    public constructor(selector: string, generate: GenerateRules, host?: Element) {
         this.host = host
         this.selector = selector
 
@@ -56,7 +56,7 @@ class StyleSheetFactory {
      * Resets generated CSS from new registration function
      * @param generate Function which exposes the factory DSL
      */
-    public reset(generate: RuleGenerator): StyleSheetFactory {
+    public reset(generate: GenerateRules): StyleSheetFactory {
         generate(this)
 
         return this
@@ -103,6 +103,11 @@ class StyleSheetFactory {
      * @param value CSS content string
      */
     public write(value: string): void {
+
+        if (this.selector.endsWith(Combinators.Descendant)) {
+            throw new Error('Cannot write rules for incomplete selector')
+        }
+
         this.value += value
     }
 
@@ -111,7 +116,7 @@ class StyleSheetFactory {
      * @param selector CSS selector to wrap rule set
      * @param generate Function which exposes the factory DSL
      */
-    public select(selector: string, generate?: RuleGenerator): string {
+    public select(selector: string, generate?: GenerateRules): string {
 
         if (generate) {
             this.children.push(new StyleSheetFactory(this.selector + selector, generate))
@@ -120,31 +125,31 @@ class StyleSheetFactory {
         return selector
     }
 
-    public selectActive(generate?: RuleGenerator): string {
+    public selectActive(generate?: GenerateRules): string {
         return this.selectPseudoClass('active', generate)
     }
 
-    public selectAfter(generate?: RuleGenerator): string {
+    public selectAfter(generate?: GenerateRules): string {
         return this.selectPseudoElement('after', generate)
     }
 
-    public selectAnyLink(generate?: RuleGenerator): string {
+    public selectAnyLink(generate?: GenerateRules): string {
         return this.selectPseudoClass('any-link', generate)
     }
 
-    public selectBackdrop(generate?: RuleGenerator): string {
+    public selectBackdrop(generate?: GenerateRules): string {
         return this.selectPseudoElement('backdrop', generate)
     }
 
-    public selectBefore(generate?: RuleGenerator): string {
+    public selectBefore(generate?: GenerateRules): string {
         return this.selectPseudoElement('before', generate)
     }
 
-    public selectBlank(generate?: RuleGenerator): string {
+    public selectBlank(generate?: GenerateRules): string {
         return this.selectPseudoClass('blank', generate)
     }
 
-    public selectChecked(generate?: RuleGenerator): string {
+    public selectChecked(generate?: GenerateRules): string {
         return this.selectPseudoClass('checked', generate)
     }
 
@@ -153,7 +158,7 @@ class StyleSheetFactory {
      * @param constructor Element class to select
      * @param generate Function which exposes the factory DSL
      */
-    public selectClass(constructor: new() => Element, generate?: RuleGenerator): string {
+    public selectClass(constructor: new() => Element, generate?: GenerateRules): string {
         return this.selectClassName(constructor.name, generate)
     }
 
@@ -162,107 +167,115 @@ class StyleSheetFactory {
      * @param className Name to select from element class lists
      * @param generate Function which exposes the factory DSL
      */
-    public selectClassName(className: string, generate?: RuleGenerator): string {
+    public selectClassName(className: string, generate?: GenerateRules): string {
         return this.select(Combinators.Class + className, generate)
     }
 
-    public selectCue(generate?: RuleGenerator): string {
+    public selectCue(generate?: GenerateRules): string {
         return this.selectPseudoElement('cue', generate)
     }
 
-    public selectCueRegion(generate?: RuleGenerator): string {
+    public selectCueRegion(generate?: GenerateRules): string {
         return this.selectPseudoElement('cue-region', generate)
     }
 
-    public selectCurrentTimed(selectors: string[], generate?: RuleGenerator): string {
+    public selectCurrentTimed(selectors: string[], generate?: GenerateRules): string {
         return this.selectPseudoClass(`current(${ selectors.join(', ') })`, generate)
     }
 
-    public selectDefault(generate?: RuleGenerator): string {
+    public selectDefault(generate?: GenerateRules): string {
         return this.selectPseudoClass('default', generate)
     }
 
-    public selectDir(direction: 'ltr' | 'rtl', generate?: RuleGenerator): string {
+    public selectDefined(generate?: GenerateRules): string {
+        return this.selectPseudoClass('defined', generate)
+    }
+
+    public selectDescendant(generate?: GenerateRules): string {
+        return this.select(Combinators.Descendant, generate)
+    }
+
+    public selectDir(direction: 'ltr' | 'rtl', generate?: GenerateRules): string {
         return this.selectPseudoClass(`dir(${ direction })`, generate)
     }
 
-    public selectDisabled(generate?: RuleGenerator): string {
+    public selectDisabled(generate?: GenerateRules): string {
         return this.selectPseudoClass('disabled', generate)
     }
 
-    public selectEmpty(generate?: RuleGenerator): string {
+    public selectEmpty(generate?: GenerateRules): string {
         return this.selectPseudoClass('empty', generate)
     }
 
-    public selectEnabled(generate?: RuleGenerator): string {
+    public selectEnabled(generate?: GenerateRules): string {
         return this.selectPseudoClass('enabled', generate)
     }
 
-    public selectFileSelectorButton(generate?: RuleGenerator): string {
+    public selectFileSelectorButton(generate?: GenerateRules): string {
         return this.selectPseudoElement('file-selector-button', generate)
     }
 
-    public selectFirstLetter(generate?: RuleGenerator): string {
+    public selectFirstLetter(generate?: GenerateRules): string {
         return this.selectPseudoElement('first-letter', generate)
     }
     
-    public selectFirstLine(generate?: RuleGenerator): string {
+    public selectFirstLine(generate?: GenerateRules): string {
         return this.selectPseudoElement('first-line', generate)
     }
 
-    public selectFirstPage(generate?: RuleGenerator): string {
+    public selectFirstPage(generate?: GenerateRules): string {
         return this.selectPseudoClass('first', generate)
     }
 
-    public selectFirstChild(generate?: RuleGenerator): string {
+    public selectFirstChild(generate?: GenerateRules): string {
         return this.selectPseudoClass('first-child', generate)
     }
 
-    public selectFirstOfType(generate?: RuleGenerator): string {
+    public selectFirstOfType(generate?: GenerateRules): string {
         return this.selectPseudoClass('first-of-type', generate)
     }
 
-    public selectFocus(generate?: RuleGenerator): string {
+    public selectFocus(generate?: GenerateRules): string {
         return this.selectPseudoClass('focus', generate)
     }
 
-    public selectFocusVisible(generate?: RuleGenerator): string {
+    public selectFocusVisible(generate?: GenerateRules): string {
         return this.selectPseudoClass('focus-visible', generate)
     }
 
-    public selectFocusWithin(generate?: RuleGenerator): string {
+    public selectFocusWithin(generate?: GenerateRules): string {
         return this.selectPseudoClass('focus-within', generate)
     }
 
-    public selectFullscreen(generate?: RuleGenerator): string {
+    public selectFullscreen(generate?: GenerateRules): string {
         return this.selectPseudoClass('fullscreen', generate)
     }
 
-    public selectFutureTimed(selectors: string[], generate?: RuleGenerator): string {
+    public selectFutureTimed(selectors: string[], generate?: GenerateRules): string {
         return this.selectPseudoClass(`future(${ selectors.join(', ') })`, generate)
     }
 
-    public selectGrammarError(generate?: RuleGenerator): string {
+    public selectGrammarError(generate?: GenerateRules): string {
         return this.selectPseudoElement('grammar-error', generate)
     }
 
-    public selectHas(selectors: string[], generate?: RuleGenerator): string {
+    public selectHas(selectors: string[], generate?: GenerateRules): string {
         return this.selectPseudoClass(`has(${ selectors.join(', ') })`, generate)
     }
 
-    public selectHost(generate?: RuleGenerator): string {
+    public selectHost(generate?: GenerateRules): string {
         return this.selectPseudoClass('host', generate)
     }
 
-    public selectHostContext(selectors: string[], generate?: RuleGenerator): string {
+    public selectHostContext(selectors: string[], generate?: GenerateRules): string {
         return this.selectPseudoClass(`host-context(${ selectors.join(', ') })`, generate)
     }
 
-    public selectHostIs(selectors: string[], generate?: RuleGenerator): string {
+    public selectHostIs(selectors: string[], generate?: GenerateRules): string {
         return this.selectPseudoClass(`host(${ selectors.join(', ') })`, generate)
     }
 
-    public selectHover(generate?: RuleGenerator): string {
+    public selectHover(generate?: GenerateRules): string {
         return this.selectPseudoClass('hover', generate)
     }
 
@@ -271,123 +284,123 @@ class StyleSheetFactory {
      * @param id Unique Id to select
      * @param generate Function which exposes the factory DSL
      */
-    public selectId(id: string, generate?: RuleGenerator): string {
+    public selectId(id: string, generate?: GenerateRules): string {
         return this.select(Combinators.Id + id, generate)
     }
 
-    public selectIndeterminate(generate?: RuleGenerator): string {
+    public selectIndeterminate(generate?: GenerateRules): string {
         return this.selectPseudoClass('indeterminate', generate)
     }
 
-    public selectInRange(generate?: RuleGenerator): string {
+    public selectInRange(generate?: GenerateRules): string {
         return this.selectPseudoClass('in-range', generate)
     }
 
-    public selectInvalid(generate?: RuleGenerator): string {
+    public selectInvalid(generate?: GenerateRules): string {
         return this.selectPseudoClass('invalid', generate)
     }
 
-    public selectIs(selectors: string[], generate?: RuleGenerator): string {
+    public selectIs(selectors: string[], generate?: GenerateRules): string {
         return this.selectPseudoClass(`is(${ selectors.join(', ') })`, generate)
     }
 
-    public selectLang(language: string, generate?: RuleGenerator): string {
+    public selectLang(language: string, generate?: GenerateRules): string {
         return this.selectPseudoClass(`lang(${ language })`, generate)
     }
 
-    public selectLastChild(generate?: RuleGenerator): string {
+    public selectLastChild(generate?: GenerateRules): string {
         return this.selectPseudoClass('last-child', generate)
     }
 
-    public selectLastOfType(generate?: RuleGenerator): string {
+    public selectLastOfType(generate?: GenerateRules): string {
         return this.selectPseudoClass('last-of-type', generate)
     }
 
-    public selectLeftHandPage(generate?: RuleGenerator): string {
+    public selectLeftHandPage(generate?: GenerateRules): string {
         return this.selectPseudoClass('left', generate)
     }
 
-    public selectLink(generate?: RuleGenerator): string {
+    public selectLink(generate?: GenerateRules): string {
         return this.selectPseudoClass('link', generate)
     }
 
-    public selectLocalLink(generate?: RuleGenerator): string {
+    public selectLocalLink(generate?: GenerateRules): string {
         return this.selectPseudoClass('local-link', generate)
     }
 
-    public selectMarker(generate?: RuleGenerator): string {
+    public selectMarker(generate?: GenerateRules): string {
         return this.selectPseudoElement('marker', generate)
     }
 
-    public selectNot(selectors: string[], generate?: RuleGenerator): string {
+    public selectNot(selectors: string[], generate?: GenerateRules): string {
         return this.selectPseudoClass(`not(${ selectors.join(', ') })`, generate)
     }
 
-    public selectNthChild(nth: string | number, generate?: RuleGenerator): string {
+    public selectNthChild(nth: string | number, generate?: GenerateRules): string {
         return this.selectPseudoClass(`nth-child(${ nth })`, generate)
     }
 
-    public selectNthColumn(nth: string | number, generate?: RuleGenerator): string {
+    public selectNthColumn(nth: string | number, generate?: GenerateRules): string {
         return this.selectPseudoClass(`nth-col(${ nth })`, generate)
     }
 
-    public selectNthOfType(nth: string | number, generate?: RuleGenerator): string {
+    public selectNthOfType(nth: string | number, generate?: GenerateRules): string {
         return this.selectPseudoClass(`nth-of-type(${ nth })`, generate)
     }
 
-    public selectNthLastChild(nth: string | number, generate?: RuleGenerator): string {
+    public selectNthLastChild(nth: string | number, generate?: GenerateRules): string {
         return this.selectPseudoClass(`nth-last-child(${ nth })`, generate)
     }
 
-    public selectNthLastColumn(nth: string | number, generate?: RuleGenerator): string {
+    public selectNthLastColumn(nth: string | number, generate?: GenerateRules): string {
         return this.selectPseudoClass(`nth-last-col(${ nth })`, generate)
     }
 
-    public selectNthLastOfType(nth: string | number, generate?: RuleGenerator): string {
+    public selectNthLastOfType(nth: string | number, generate?: GenerateRules): string {
         return this.selectPseudoClass(`nth-last-of-type(${ nth })`, generate)
     }
 
-    public selectOnlyChild(generate?: RuleGenerator): string {
+    public selectOnlyChild(generate?: GenerateRules): string {
         return this.selectPseudoClass('only-child', generate)
     }
 
-    public selectOnlyOfType(generate?: RuleGenerator): string {
+    public selectOnlyOfType(generate?: GenerateRules): string {
         return this.selectPseudoClass('only-of-type', generate)
     }
 
-    public selectOptional(generate?: RuleGenerator): string {
+    public selectOptional(generate?: GenerateRules): string {
         return this.selectPseudoClass('optional', generate)
     }
 
-    public selectOutOfRange(generate?: RuleGenerator): string {
+    public selectOutOfRange(generate?: GenerateRules): string {
         return this.selectPseudoClass('out-of-range', generate)
     }
 
-    public selectPart(part: string, generate?: RuleGenerator): string {
+    public selectPart(part: string, generate?: GenerateRules): string {
         return this.selectPseudoElement(`part(${ part })`, generate)
     }
 
-    public selectPastTimed(generate?: RuleGenerator): string {
+    public selectPastTimed(generate?: GenerateRules): string {
         return this.selectPseudoClass('past', generate)
     }
 
-    public selectPaused(generate?: RuleGenerator): string {
+    public selectPaused(generate?: GenerateRules): string {
         return this.selectPseudoClass('paused', generate)
     }
 
-    public selectPictureInPicture(generate?: RuleGenerator): string {
+    public selectPictureInPicture(generate?: GenerateRules): string {
         return this.selectPseudoClass('picture-in-picture', generate)
     }
 
-    public selectPlaceholder(generate?: RuleGenerator): string {
+    public selectPlaceholder(generate?: GenerateRules): string {
         return this.selectPseudoElement('placeholder', generate)
     }
 
-    public selectPlaceholderShown(generate?: RuleGenerator): string {
+    public selectPlaceholderShown(generate?: GenerateRules): string {
         return this.selectPseudoClass('placeholder-shown', generate)
     }
 
-    public selectPlaying(generate?: RuleGenerator): string {
+    public selectPlaying(generate?: GenerateRules): string {
         return this.selectPseudoClass('playing', generate)
     }
 
@@ -396,7 +409,7 @@ class StyleSheetFactory {
      * @param element 
      * @param generate 
      */
-    public selectPseudoElement(element: string, generate?: RuleGenerator): string {
+    public selectPseudoElement(element: string, generate?: GenerateRules): string {
         return this.select(Combinators.PseudoElement + element, generate)
     }
 
@@ -405,71 +418,71 @@ class StyleSheetFactory {
      * @param state 
      * @param generate 
      */
-    public selectPseudoClass(state: string, generate?: RuleGenerator): string {
+    public selectPseudoClass(state: string, generate?: GenerateRules): string {
         return this.select(Combinators.PseudoState + state, generate)
     }
 
-    public selectReadOnly(generate?: RuleGenerator): string {
+    public selectReadOnly(generate?: GenerateRules): string {
         return this.selectPseudoClass('read-only', generate)
     }
 
-    public selectReadWrite(generate?: RuleGenerator): string {
+    public selectReadWrite(generate?: GenerateRules): string {
         return this.selectPseudoClass('read-write', generate)
     }
 
-    public selectRequired(generate?: RuleGenerator): string {
+    public selectRequired(generate?: GenerateRules): string {
         return this.selectPseudoClass('required', generate)
     }
 
-    public selectRightHandPage(generate?: RuleGenerator): string {
+    public selectRightHandPage(generate?: GenerateRules): string {
         return this.selectPseudoClass('right', generate)
     }
 
-    public selectRoot(generate?: RuleGenerator): string {
+    public selectRoot(generate?: GenerateRules): string {
         return this.selectPseudoClass('root', generate)
     }
 
-    public selectSelection(generate?: RuleGenerator): string {
+    public selectSelection(generate?: GenerateRules): string {
         return this.selectPseudoElement('selection', generate)
     }
 
-    public selectSlotted(selectors: string[], generate?: RuleGenerator): string {
+    public selectSlotted(selectors: string[], generate?: GenerateRules): string {
         return this.selectPseudoElement(`slotted(${ selectors.join(', ') })`, generate)
     }
 
-    public selectScope(generate?: RuleGenerator): string {
+    public selectScope(generate?: GenerateRules): string {
         return this.selectPseudoClass('scope', generate)
     }
 
-    public selectSpellingError(generate?: RuleGenerator): string {
+    public selectSpellingError(generate?: GenerateRules): string {
         return this.selectPseudoElement('spelling-error', generate)
     }
 
-    public selectState(status: string, generate?: RuleGenerator): string {
+    public selectState(status: string, generate?: GenerateRules): string {
         return this.selectPseudoClass(`state(${ status })`, generate)
     }
 
-    public selectTarget(generate?: RuleGenerator): string {
+    public selectTarget(generate?: GenerateRules): string {
         return this.selectPseudoClass('target', generate)
     }
 
-    public selectTargetWithin(generate?: RuleGenerator): string {
+    public selectTargetWithin(generate?: GenerateRules): string {
         return this.selectPseudoClass('target-within', generate)
     }
 
-    public selectUserInvalid(generate?: RuleGenerator): string {
+    public selectUserInvalid(generate?: GenerateRules): string {
         return this.selectPseudoClass('user-invalid', generate)
     }
 
-    public selectValid(generate?: RuleGenerator): string {
+    public selectValid(generate?: GenerateRules): string {
         return this.selectPseudoClass('valid', generate)
     }
 
-    public selectVisited(generate?: RuleGenerator): string {
+    public selectVisited(generate?: GenerateRules): string {
         return this.selectPseudoClass('visited', generate)
     }
 
-    public selectWhere(selectors: string[], generate?: RuleGenerator): string {
+    public selectWhere(selectors: string[], generate?: GenerateRules): string {
         return this.selectPseudoClass(`where(${ selectors.join(', ') })`, generate)
     }
 
@@ -486,7 +499,7 @@ class StyleSheetFactory {
  * @param host Element which will host the resulting style sheet
  * @param generate Function which exposes the factory DSL
  */
-export function createStyleSheet(host: Element, generate: RuleGenerator): string {
+export function createStyleSheet(host: Element, generate: GenerateRules): string {
     
     /**
      * Reset existing style sheet if one already exists
