@@ -18,7 +18,7 @@ const styleSheet = document.createElement('style')
 styleSheet.textContent = createStyleSheet(css => {
     css.select('button', css => {
         css.write(`
-            background: blue;
+            background-color: blue;
             color: white;
         `)
         css.selectHover(css => {
@@ -51,7 +51,7 @@ export class Example extends Component {
         return createStyleSheet(css => {
             css.selectClass(HTMLButtonElement, css => {
                 css.write(`
-                    background: blue;
+                    background-color: blue;
                     color: white;
                 `)
                 css.selectHover(css => {
@@ -71,7 +71,7 @@ Instead of writing raw CSS properties, you may also use `css.assign()` and pass 
 createStyleSheet(css => {
     css.select('button', css => {
         css.assign({
-            background: 'blue',
+            backgroundColor: 'blue',
             color: 'white'
         })
         css.selectHover(css => {
