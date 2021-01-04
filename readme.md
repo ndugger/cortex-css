@@ -64,3 +64,21 @@ export class Example extends Component {
     }
 }
 ```
+
+### Alternative Usage
+Instead of writing raw CSS properties, you may also use `css.assign()` and pass in a partial `CSSStyleDeclaration` object. Note that this is less performant, as the object needs to be serialized into valid CSS before writing to the style sheet, but it can help with code correctness in some situations.
+```typescript
+createStyleSheet(css => {
+    css.select('button', css => {
+        css.assign({
+            background: 'blue',
+            color: 'white'
+        })
+        css.selectHover(css => {
+            css.assign({
+                opacity: '0.85'
+            })
+        })
+    })
+})
+```
