@@ -48,7 +48,7 @@ export class Example extends Component {
     }
     
     protected theme() {
-        return createStyleSheet(this, css => {
+        return createStyleSheet(css => {
             css.selectClass(HTMLButtonElement, css => {
                 css.write(`
                     background: blue;
