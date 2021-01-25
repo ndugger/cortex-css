@@ -1,4 +1,4 @@
-# glow
+# cortex-css
 CSS Style Sheet Factory DSL
 
 ### Description
@@ -11,7 +11,7 @@ npm install ndugger/glow --save
 
 ### Example
 ```typescript
-import { createStyleSheet } from 'glow'
+import { createStyleSheet } from 'cortex-css'
 
 const styleSheet = document.createElement('style')
 
@@ -35,7 +35,7 @@ document.head.append(styleSheet)
 ### Usage With [Cortex](//github.com/ndugger/cortex)
 ```typescript
 import { Component, createElement } from 'cortex'
-import { createStyleSheet } from 'glow'
+import { createStyleSheet } from 'cortex-css'
 
 export class Example extends Component {
 
